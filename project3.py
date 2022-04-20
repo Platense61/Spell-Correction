@@ -5,7 +5,18 @@ def main():
     window = tk.Tk()
     window.title("Text Editor")
 
-    window.rowconfigure(0,minsize=600,weight=1)
+    window_w = 900
+    window_h = 600
+
+    screen_w = window.winfo_screenwidth()
+    screen_h = window.winfo_screenheight()
+    center_x = int(screen_w/2 - window_w/2)
+    center_y = int(screen_h/2 - window_h/2)
+
+    # centers the window
+    window.geometry(f'{window_w}x{window_h}+{center_x}+{center_y}')
+
+    window.rowconfigure(0,minsize=900,weight=1)
     window.columnconfigure(1, minsize=900, weight=1)
 
     txt_edit = tk.Text(window)
