@@ -12,6 +12,8 @@ incorrect_words = {}    # key : value -> str : list -> correct word : incorrect 
 bi_freq = {}            # key : value -> str : int  -> bigram : frequency
 word_freq = {}          # key : value -> str : int  -> word : frequency found in big.txt
 
+word = ""
+
 def main():
     window = tk.Tk()
     window.title("Text Editor")
@@ -35,12 +37,15 @@ def main():
     fr_buttons = tk.Frame(window)
     btn_open = tk.Button(fr_buttons, text="Open")
     btn_save = tk.Button(fr_buttons, text="Get Text", command= lambda: retrieve_input(txt_edit))
+    listbox = tk.Listbox(fr_buttons, height=4)
 
     btn_open.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
     btn_save.grid(row=1, column=0, sticky="ew", padx=5)
+    listbox.grid(row = 2, column = 0, sticky = "ew")
     fr_buttons.grid(row=0, column=0, sticky="ns")
     txt_edit.grid(row=0, column=1, sticky="nsew")
 
+    window.bind("<Key>", update_suggestions)
     window.mainloop()
 
 
@@ -55,6 +60,17 @@ def retrieve_input(txt_edit):
     my_split = inputValue.split()
     print(my_split)
     print(inputValue)
+    
+#This is an event listener. Listens for each character typed in our entry window.
+#declared right above window.mainloop() above
+def update_suggestions(event):
+    global word
+    if event.char == ' ': #If a space is detected word is printed and the global var word is set to empty string
+        print(word)
+        word = ""
+    #This else statement is where the suggestion code will go. So far it contains the current word being typed (global called word)
+    else:
+        word = word + event.char
 
 
 def importData():
