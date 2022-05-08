@@ -62,7 +62,6 @@ def count2L():
 
 # all incorrect_words (.dat) files
 def incorrect_words():
-    # TODO: holbrook-tagged.dat
     print("parsing holbrook-tagged.dat...")
     # holbrook-tagged format : incorrect word encapsulated within 
     # <ERR targ='correct word'> 'incorrect word' </ERR>
@@ -124,6 +123,11 @@ def incorrect_words():
     master = combineDict(master, holbrook_tagged_data)
 
     toCSV('clean/incorrect_words.csv', ['word', 'wrong'], master)
+    # toCSV('clean/test_aspell.csv', ['word', 'wrong'], aspell_data)
+    # toCSV('clean/test_hol_missp.csv', ['word', 'wrong'], holbrook_missp_data)
+    # toCSV('clean/test_hol_tagged.csv', ['word', 'wrong'], holbrook_tagged_data)
+    # toCSV('clean/test_wiki.csv', ['word', 'wrong'], wikipedia_data)
+    # toCSV('clean/test_missp.csv', ['word', 'wrong'], missp_data)
 
 
 def combineDict(dict1, dict2):
@@ -153,7 +157,7 @@ def aspellFormat(path):
                 break
 
             if line[0] == '$':
-                key = line[1:len(line)].lower()
+                key = line[1:len(line)-1].lower()
                 if key not in data:
                     data[key] = []
             else:
@@ -166,6 +170,9 @@ def toCSV(path, field_names, data):
     # for key, value in data.items():
     #     print(key, " : ", value)
     with open(path, 'w') as csvfile:
+        # dw = csv.DictWriter(csvfile, delimiter=',', fieldnames=field_names)
+        # dw.writeheader()
+
         for key, value in data.items():
             if type(value) == int:
                 csvfile.write("%s, %d\n" % (key, value))

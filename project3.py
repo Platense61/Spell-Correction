@@ -1,5 +1,16 @@
 import tkinter as tk
+import os
+import csv
 
+#####
+# - Need to put the path to your 'clean' folder on line 64
+#   in importData()
+#####
+
+# global dictionaries
+incorrect_words = {}    # key : value -> str : list -> correct word : incorrect spelling(s)
+bi_freq = {}            # key : value -> str : int  -> bigram : frequency
+word_freq = {}          # key : value -> str : int  -> word : frequency found in big.txt
 
 def main():
     window = tk.Tk()
@@ -46,5 +57,51 @@ def retrieve_input(txt_edit):
     print(inputValue)
 
 
+def importData():
+    if os.name == 'posix': # mac
+        path_to_clean = 'data/clean/'
+
+    if os.name == 'nt': # windows
+        pass
+
+    importAll(path_to_clean)
+    print("imported .csv's...")
+
+
+def importAll(path):
+    global incorrect_words, bi_freq, word_freq
+    key = ""
+    value = ""
+    values = []
+
+    with open(path + 'incorrect_words.csv', 'r') as fp:
+        for line in csv.reader(fp):
+            key = line[0]
+            values = []
+            # print(key)
+            for i in range(1, len(line)):
+                value = line[i]
+                # print('\t',line[i])
+                if value[0] == '[':
+                    value = value[1:]
+                if value[len(value)-1] == ']':
+                    value = value[:len(value)-1]
+                value = value[1:len(value)-1]
+                values.append(value)
+
+            incorrect_words[key] = values
+
+        with open(path + 'bigram_freq.csv', 'r') as fp:
+            for line in csv.reader(fp):
+                bi_freq[line[0]] = int(line[1])
+
+        with open(path + 'word_freq.csv', 'r') as fp:
+            for line in csv.reader(fp):
+                word_freq[line[0]] = int(line[1])
+
+
+
+
 if __name__ == "__main__":
+    importData()
     main()
