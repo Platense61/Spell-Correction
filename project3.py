@@ -3,8 +3,13 @@ import os
 import csv
 
 #####
-# - Need to put the path to your 'clean' folder on line 64
-#   in importData()
+#   - Need to put the path to your 'clean' folder on line 64 in importData()
+#
+# TODO:
+#   - add to checkSpelling(word)
+#   - definitely worth reading that article on building a spell checker
+#       - has some useful insights and could help us get started and/or our heads wrapped around what needs to be done.
+#
 #####
 
 # global dictionaries
@@ -60,17 +65,28 @@ def retrieve_input(txt_edit):
     my_split = inputValue.split()
     print(my_split)
     print(inputValue)
-    
+
+
 #This is an event listener. Listens for each character typed in our entry window.
 #declared right above window.mainloop() above
 def update_suggestions(event):
     global word
-    if event.char == ' ': #If a space is detected word is printed and the global var word is set to empty string
+
+    # needs to update the internal 'word' if a backspace key is found
+    if event.keycode == 855638143: # the keycode for backspace
+        word = word[:len(word)-1]
+
+    elif event.char == ' ': #If a space is detected word is printed and the global var word is set to empty string
         print(word)
+        checkSpelling(word)
         word = ""
     #This else statement is where the suggestion code will go. So far it contains the current word being typed (global called word)
     else:
         word = word + event.char
+
+
+def checkSpelling():
+    pass
 
 
 def importData():
@@ -114,8 +130,6 @@ def importAll(path):
         with open(path + 'word_freq.csv', 'r') as fp:
             for line in csv.reader(fp):
                 word_freq[line[0]] = int(line[1])
-
-
 
 
 if __name__ == "__main__":
