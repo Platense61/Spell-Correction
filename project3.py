@@ -18,6 +18,7 @@ bi_freq = {}            # key : value -> str : int  -> bigram : frequency
 word_freq = {}          # key : value -> str : int  -> word : frequency found in big.txt
 
 word = ""
+letters = "abcdefghijklmnopqrstuvwxyz"
 
 def main():
     window = tk.Tk()
@@ -71,7 +72,6 @@ def retrieve_input(txt_edit):
 #declared right above window.mainloop() above
 def update_suggestions(event):
     global word
-    print(event.keycode)
 
     # needs to update the internal 'word' if a backspace key is found
     if event.keycode == 855638143: # the keycode for backspace
@@ -88,17 +88,66 @@ def update_suggestions(event):
 
 def findSuggestions(word):
     word_splits = generateSplits(word)
-    # TODO: create word lists of replacements, translations, etc.
+    pos_deletes = deletionList(word_splits)
+    pos_swaps = swapList(word_splits)
+    pos_replacements = replaceList(word_splits)
+    pos_inserts = insertionList(word_splits)
+
+    # print("delete",pos_deletes)
+    # print("swap",pos_swaps)
+    # print("replace",pos_replacements, len(pos_replacements))
+    # print("insert",pos_inserts, len(pos_inserts))
 
 
 # should this inlcude sets where the entire word is in one section? Currently will
 def generateSplits(word):
-    splits = ()
+    splits = []
     for i in range(len(word)+1):
-        splits += (word[:i], word[i:])
-        print(word[:i], word[i:])
+        splits.append( (word[:i], word[i:]) )
+        # print(word[:i], word[i:])
 
     return splits
+
+    
+# deletion
+def deletionList(set):
+    list = []
+    for L, R in set:
+        if len(L) > 0 and len(R) > 0:
+            list.append(L + R[1:])
+    return list
+
+# swapping of two adjacent letters
+def swapList(set):
+    list = []
+    for L, R in set:
+        if len(L) > 0 and len(R) > 0:
+            list.append(L[:len(L)-1] + R[0] + L[len(L)-1] + R[1:])
+    return list
+    
+
+# replace a letter
+def replaceList(set):
+    list = []
+    for L, R in set:
+        if len(L) > 0 and len(R) > 0:
+            for char in letters:
+                list.append(L + char +  R[1:])
+    return list
+
+
+# insert every letter into every set tuple
+def insertionList(set):
+    list = []
+    for L, R in set:
+        for char in letters:
+            list.append(L + char + R)
+    return list
+
+
+# returns t or f if the word is in our makeshift dictionary of all words
+def isKnown(word):
+    return word in word_freq.keys()
 
 
 def importData():
