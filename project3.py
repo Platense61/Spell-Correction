@@ -6,7 +6,7 @@ import csv
 #   - Need to put the path to your 'clean' folder on line 64 in importData()
 #
 # TODO:
-#   - add to checkSpelling(word)
+#   - add to findSuggestions(word)
 #   - definitely worth reading that article on building a spell checker
 #       - has some useful insights and could help us get started and/or our heads wrapped around what needs to be done.
 #
@@ -71,22 +71,34 @@ def retrieve_input(txt_edit):
 #declared right above window.mainloop() above
 def update_suggestions(event):
     global word
+    print(event.keycode)
 
     # needs to update the internal 'word' if a backspace key is found
     if event.keycode == 855638143: # the keycode for backspace
         word = word[:len(word)-1]
 
-    elif event.char == ' ': #If a space is detected word is printed and the global var word is set to empty string
+    elif event.char == ' ' or event.keycode == 603979789: #If a space or enter key is detected word is printed and the global var word is set to empty string
         print(word)
-        checkSpelling(word)
+        findSuggestions(word)
         word = ""
     #This else statement is where the suggestion code will go. So far it contains the current word being typed (global called word)
     else:
         word = word + event.char
 
 
-def checkSpelling():
-    pass
+def findSuggestions(word):
+    word_splits = generateSplits(word)
+    # TODO: create word lists of replacements, translations, etc.
+
+
+# should this inlcude sets where the entire word is in one section? Currently will
+def generateSplits(word):
+    splits = ()
+    for i in range(len(word)+1):
+        splits += (word[:i], word[i:])
+        print(word[:i], word[i:])
+
+    return splits
 
 
 def importData():
