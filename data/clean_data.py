@@ -32,6 +32,30 @@ def big():
 
                     buffer = ""
 
+    # add new word list
+    print("parsing words_alpha.txt...")
+    words_alpha_data = {}
+
+    with open("raw/words_alpha.txt", 'r') as fp:
+        while True:
+            line = fp.readline().lower()
+            line = line[:len(line)-1]
+
+            if not line:
+                print("end of file. Converting to CSV...")
+                break
+
+            words_alpha_data[line] = 1
+
+    # combine the word lists
+    for key, value, in words_alpha_data.items():
+        print(key, value)
+        if key in words:
+            words[key] += words_alpha_data[key]
+        else:
+            words[key] = value
+
+    print(words['a'])
     # sorts dictionary by key
     words = dict(sorted(words.items(), reverse=True, key=lambda item: item[1]))
     toCSV('clean/word_freq.csv', ["word", "freq"], words)
@@ -139,6 +163,9 @@ def combineDict(dict1, dict2):
             dict1[key] = value
 
     return dict1
+
+
+
 
 
 # aspell format

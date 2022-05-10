@@ -95,8 +95,8 @@ def openFile():
 
             elif not char.isalpha():
                 if not isKnown(buffer):
-                    print(buffer,"is not a known word")
-                    #findSuggestions(buffer)
+                    print(buffer, "->", correct_word)
+                    findSuggestions(buffer)
                 buffer = ""
 
             else:
@@ -258,6 +258,7 @@ def importAll(path):
 
         with open(path + 'word_freq.csv', 'r') as fp:
             for line in csv.reader(fp):
+                # print(line[0], line[1])
                 word_freq[line[0]] = int(line[1])
 
 
