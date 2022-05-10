@@ -29,6 +29,32 @@ letters = "abcdefghijklmnopqrstuvwxyz"
 begin = time.time()
 
 def main():
+    ###
+    #This function had to be put inside main, because i could not access widget property with bind listener outside of main scope
+    # So far it will underline any word not in word_freq{} (from big.txt)
+    ###
+    def detect_misspell(event):
+        global word, word_freq
+
+        # needs to update the internal 'word' if a backspace key is found
+        if event.keycode == 855638143: # the keycode for backspace
+            word = word[:len(word)-1]
+
+        elif event.char == ' ' or event.keycode == 603979789: #If a space or enter key is detected word is printed and the global var word is set to empty string
+            print(word)
+            if word in word_freq:
+                print("Found")
+
+            else:
+                print("Not in words")
+                txt_edit.tag_add('underline', "end-"+str(len(word)+2)+"chars", "end-2c")
+                findSuggestions(word)
+                #txt_edit.tag_config('highlight', foreground='red')
+            word = ""
+        #This else statement is where the suggestion code will go. So far it contains the current word being typed (global called word)
+        else:
+            word = word + event.char
+###############################################################
     window = tk.Tk()
     window.title("Text Editor")
 
@@ -48,6 +74,7 @@ def main():
     window.columnconfigure(1, minsize=900, weight=1)
 
     txt_edit = tk.Text(window)
+    txt_edit.tag_config('underline', underline = True)
     fr_buttons = tk.Frame(window)
     btn_open = tk.Button(fr_buttons, text="Open", command = openFile)
     btn_save = tk.Button(fr_buttons, text="Get Text", command= lambda: retrieve_input(txt_edit))
@@ -59,7 +86,7 @@ def main():
     fr_buttons.grid(row=0, column=0, sticky="ns")
     txt_edit.grid(row=0, column=1, sticky="nsew")
 
-    window.bind("<Key>", update_suggestions)
+    window.bind("<Key>", detect_misspell)
     window.mainloop()
 
 
