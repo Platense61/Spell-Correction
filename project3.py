@@ -47,7 +47,7 @@ def main():
 
             else:
                 print("Not in words")
-                txt_edit.tag_add('underline', "end-"+str(len(word)+1)+"chars", "end-1c")
+                txt_edit.tag_add('underline', "end-"+str(len(word)+2)+"chars", "end-2c")
                 findSuggestions(word)
                 #txt_edit.tag_config('highlight', foreground='red')
             word = ""
