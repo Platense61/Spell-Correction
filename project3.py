@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import time
 import tkinter as tk
+from tkinter import filedialog as fd
 import os
 import csv
 
@@ -43,7 +44,7 @@ def main():
 
     txt_edit = tk.Text(window)
     fr_buttons = tk.Frame(window)
-    btn_open = tk.Button(fr_buttons, text="Open")
+    btn_open = tk.Button(fr_buttons, text="Open", command = openFile)
     btn_save = tk.Button(fr_buttons, text="Get Text", command= lambda: retrieve_input(txt_edit))
     listbox = tk.Listbox(fr_buttons, height=4)
 
@@ -55,6 +56,24 @@ def main():
 
     window.bind("<Key>", update_suggestions)
     window.mainloop()
+
+
+def openFile():
+    filetypes = (
+        ('text files', '*.txt'),
+        ('All files', '*.*')
+    )
+
+    filename = fd.askopenfilename(
+        title='Open a file',
+        initialdir=os.getcwd(),
+        filetypes=filetypes
+    )
+
+    print(filename) # prints the FULL path to a txt file
+    # TODO: need to figure out how to open a file given the full path.
+    # iterate through a dummy file printing words
+    # connect this to the getSuggestions(word) function and eventually combine it with a probability function
 
 
 # This function grabs all text in editor upon clicking the get text button and outputs to command line
@@ -90,6 +109,8 @@ def update_suggestions(event):
 
 def findSuggestions(word):
     global begin
+    begin = time.time()
+
     word_splits = generateSplits(word)
     one_char_errors = genCommonErrors(word_splits)
     two_char_errors = one_char_errors
@@ -107,8 +128,6 @@ def findSuggestions(word):
     print(two_char_errors, len(two_char_errors))
 
     print("word look-up took " + str(time.time() - begin) + " seconds")
-    begin = time.time()
-
 
 def genCommonErrors(word_splits):
     pos_deletes = deletionList(word_splits)
