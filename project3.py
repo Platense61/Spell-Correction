@@ -1,15 +1,16 @@
+from collections import OrderedDict
+import time
 import tkinter as tk
 import os
 import csv
 
 #####
 #   - Need to put the path to your 'clean' folder on line 64 in importData()
+#   - findSuggestions(word) now works relatively efficiently.
+#       - currently prints all known words within 2 common changes
 #
-# TODO:
-#   - add to findSuggestions(word)
-#   - definitely worth reading that article on building a spell checker
-#       - has some useful insights and could help us get started and/or our heads wrapped around what needs to be done.
-#
+# TODO: 
+#   - need a probability function that takes a potential word, and the current word and returns between 0 - 1
 #####
 
 # global dictionaries
@@ -19,6 +20,7 @@ word_freq = {}          # key : value -> str : int  -> word : frequency found in
 
 word = ""
 letters = "abcdefghijklmnopqrstuvwxyz"
+begin = time.time()
 
 def main():
     window = tk.Tk()
@@ -87,16 +89,35 @@ def update_suggestions(event):
 
 
 def findSuggestions(word):
+    global begin
     word_splits = generateSplits(word)
+    one_char_errors = genCommonErrors(word_splits)
+    two_char_errors = one_char_errors
+
+    for new_word in one_char_errors:
+        if new_word != None: # last new_word is None, not sure
+            splits = generateSplits(new_word)
+            errors = genCommonErrors(splits)
+
+            two_char_errors = list(OrderedDict.fromkeys(two_char_errors + errors))
+
+    two_char_errors = [k for k in two_char_errors if isKnown(k) and k != word]
+
+    print("potential replacements for " + word)
+    print(two_char_errors, len(two_char_errors))
+
+    print("word look-up took " + str(time.time() - begin) + " seconds")
+    begin = time.time()
+
+
+def genCommonErrors(word_splits):
     pos_deletes = deletionList(word_splits)
     pos_swaps = swapList(word_splits)
     pos_replacements = replaceList(word_splits)
     pos_inserts = insertionList(word_splits)
 
-    # print("delete",pos_deletes)
-    # print("swap",pos_swaps)
-    # print("replace",pos_replacements, len(pos_replacements))
-    # print("insert",pos_inserts, len(pos_inserts))
+    master = pos_deletes + pos_swaps + pos_replacements + pos_inserts
+    return list(OrderedDict.fromkeys(master))
 
 
 # should this inlcude sets where the entire word is in one section? Currently will
@@ -104,9 +125,7 @@ def generateSplits(word):
     splits = []
     for i in range(len(word)+1):
         splits.append( (word[:i], word[i:]) )
-        # print(word[:i], word[i:])
-
-    return splits
+    return list(OrderedDict.fromkeys(splits))
 
     
 # deletion
