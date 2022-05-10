@@ -118,7 +118,7 @@ def incorrect_words():
 
     # combine them into one dictionary
     master = combineDict(aspell_data, holbrook_missp_data)
-    master = combineDict(master, wikipedia_data)
+    # master = combineDict(master, wikipedia_data)
     master = combineDict(master, missp_data)
     master = combineDict(master, holbrook_tagged_data)
 

@@ -6,12 +6,17 @@ import os
 import csv
 
 #####
-#   - Need to put the path to your 'clean' folder on line 64 in importData()
 #   - findSuggestions(word) now works relatively efficiently.
 #       - currently prints all known words within 2 common changes
+#   - REMOVED WIKIPEDIA.DAT FROM THE INCORRECT WORD LIST IN ORDER TO TEST AGAINST
 #
-# TODO: 
+# TO DO: 
+#   - need to take in a file for the spell correction to work on in order to get a % correct
 #   - need a probability function that takes a potential word, and the current word and returns between 0 - 1
+#
+# IDEAS:
+#   - we should either multithread the typing and wordSuggestions so the typing doesn't freeze,
+#     or underline unknown words where you have to click on it to get suggestions
 #####
 
 # global dictionaries
@@ -59,21 +64,43 @@ def main():
 
 
 def openFile():
-    filetypes = (
-        ('text files', '*.txt'),
-        ('All files', '*.*')
-    )
+    # filename = fd.askopenfilename(
+    #     title='Open a file',
+    #     initialdir=os.getcwd(),
+    #     filetypes=(('text files', '*.txt'),('data files', '*.dat'),('All files', '*.*'))
+    # )
+    # print(filename) # prints the FULL path to a txt file
 
-    filename = fd.askopenfilename(
-        title='Open a file',
-        initialdir=os.getcwd(),
-        filetypes=filetypes
-    )
-
-    print(filename) # prints the FULL path to a txt file
-    # TODO: need to figure out how to open a file given the full path.
     # iterate through a dummy file printing words
     # connect this to the getSuggestions(word) function and eventually combine it with a probability function
+
+    # works as is on mac, might need to use the conditional in importData() if it doesn't work on windows
+    filename = 'data/raw/incorrect_words/wikipedia.dat'
+    correct_word = ""
+    buffer = ""
+    with open(filename) as fp:
+        while True:
+            char = fp.read(1)
+            if not char:
+                print("eof")
+                break
+
+            if char == '$':
+                correct_word = ""
+                while True:
+                    char = fp.read(1)
+                    if not char.isalpha() and char != '$':
+                        break
+                    correct_word += char
+
+            elif not char.isalpha():
+                if not isKnown(buffer):
+                    print(buffer,"is not a known word")
+                    #findSuggestions(buffer)
+                buffer = ""
+
+            else:
+                buffer += char
 
 
 # This function grabs all text in editor upon clicking the get text button and outputs to command line
@@ -100,7 +127,8 @@ def update_suggestions(event):
 
     elif event.char == ' ' or event.keycode == 603979789: #If a space or enter key is detected word is printed and the global var word is set to empty string
         print(word)
-        findSuggestions(word)
+        if not isKnown(word):
+            findSuggestions(word)
         word = ""
     #This else statement is where the suggestion code will go. So far it contains the current word being typed (global called word)
     else:
@@ -128,6 +156,8 @@ def findSuggestions(word):
     print(two_char_errors, len(two_char_errors))
 
     print("word look-up took " + str(time.time() - begin) + " seconds")
+    # TODO: should cross reference if a potential word shows up in the incorrect words list
+    #       along with the above, give different weights to different common mistakes
 
 def genCommonErrors(word_splits):
     pos_deletes = deletionList(word_splits)
