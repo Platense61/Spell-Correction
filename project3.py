@@ -3,6 +3,7 @@ import time
 import tkinter as tk
 import os
 import csv
+from tkinter import filedialog as fd
 
 #####
 #   - findSuggestions(word) now works relatively efficiently.
@@ -12,11 +13,6 @@ import csv
 #         correct word was first suggestion 41.87192118226601% of the time
 #         Took 46 min and 14 sec" - with code segment on line 247 - 250
 #       - general trouble with names
-#
-# TO DO: 
-#   - need to take in a file for the spell correction to work on in order to get a % correct
-#   - need a probability function that takes a potential word, and the current word and returns between 0 - 1
-# TODO: import a list of names? to help with spell check
 #
 # IDEAS:
 #   - we should either multithread the typing and wordSuggestions so the typing doesn't freeze,
@@ -125,18 +121,17 @@ def retrieve_input(txt_edit):
 
 def openFile():
     global file_opened, correct_word
-    # filename = fd.askopenfilename(
-    #     title='Open a file',
-    #     initialdir=os.getcwd(),
-    #     filetypes=(('text files', '*.txt'),('data files', '*.dat'),('All files', '*.*'))
-    # )
-    # print(filename) # prints the FULL path to a txt file
+    filename = fd.askopenfilename(
+        title='Open a file',
+        initialdir=os.getcwd(),
+        filetypes=(('All files', '*.*'),('text files', '*.txt'),('data files', '*.dat'))
+    )
+    print(filename) # prints the FULL path to a txt file
 
     # iterate through a dummy file printing words
     # connect this to the getSuggestions(word) function and eventually combine it with a probability function
 
-    # works as is on mac, might need to use the conditional in importData() if it doesn't work on windows
-    filename = 'data/raw/incorrect_words/aspell.dat'
+    #filename = 'data/raw/incorrect_words/aspell.dat'
     file_opened = True
     correct_word = ""
     buffer = ""
@@ -194,8 +189,6 @@ def update_suggestions(event):
         guessWord(word)
 
 
-# TODO: implement word suggestion everytime a key is pressed
-# TODO: Test this
 def guessWord(word):
     guesses = []
 
@@ -233,17 +226,10 @@ def findSuggestions(word):
     # print(two_char_errors, len(two_char_errors))
     print("word look-up took " + str(time.time() - begin_part) + " seconds")
 
-    # TODO: sort the list by the frequency in word_freq to find most common?
-    # TODO: should cross reference if a potential word shows up in the common misspellings words list
-    #       along with the above, give different weights to different common mistakes
-    #           - if it's in common misspellings, that could circumvent the whole process maybe?
-    #             since it's almost definitely that word
-
     # sorts by frequency 
     two_char_errors.sort(key=getWordFreq, reverse=True)
 
     # move element to the front if it's a common misspelling
-    # TODO: check to see if this slows down functionality significantly
     if word in all_incorrect_spellings:
         for key, value in incorrect_words.items():
             if word in value:
@@ -340,7 +326,7 @@ def importData():
         path_to_clean = 'data/clean/'
 
     if os.name == 'nt': # windows
-        pass
+        path_to_clean = 'data\\clean\\'
 
     importAll(path_to_clean)
     print("imported .csv's...")
