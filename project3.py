@@ -1,18 +1,22 @@
 from collections import OrderedDict
 import time
 import tkinter as tk
-from tkinter import filedialog as fd
 import os
 import csv
 
 #####
 #   - findSuggestions(word) now works relatively efficiently.
 #       - currently prints all known words within 2 common changes
-#   - REMOVED WIKIPEDIA.DAT FROM THE INCORRECT WORD LIST IN ORDER TO TEST AGAINST
+#   - REMOVED ASPELL.DAT FROM THE INCORRECT WORD LIST IN ORDER TO TEST AGAINST
+#       - "correct word appeared in top 5 81.77339901477832% of the time
+#         correct word was first suggestion 41.87192118226601% of the time
+#         Took 46 min and 14 sec" - with code segment on line 247 - 250
+#       - general trouble with names
 #
 # TO DO: 
 #   - need to take in a file for the spell correction to work on in order to get a % correct
 #   - need a probability function that takes a potential word, and the current word and returns between 0 - 1
+# TODO: import a list of names? to help with spell check
 #
 # IDEAS:
 #   - we should either multithread the typing and wordSuggestions so the typing doesn't freeze,
@@ -21,12 +25,25 @@ import csv
 
 # global dictionaries
 incorrect_words = {}    # key : value -> str : list -> correct word : incorrect spelling(s)
+all_incorrect_spellings = []
+all_incorrect_str = ""
 bi_freq = {}            # key : value -> str : int  -> bigram : frequency
 word_freq = {}          # key : value -> str : int  -> word : frequency found in big.txt
+word_freq_str = ""
 
 word = ""
 letters = "abcdefghijklmnopqrstuvwxyz"
-begin = time.time()
+begin_part = time.time()
+begin_full = begin_part
+
+# for testing
+file_opened = False
+correct_word = ""
+total = 531 # for aspell.dat
+correct = 0
+count = 0
+fully_correct = 0
+progress = 0
 
 def main():
     ###
@@ -46,14 +63,17 @@ def main():
                 print("Found")
 
             else:
-                print("Not in words")
+                # print("Not in words")
                 txt_edit.tag_add('underline', "end-"+str(len(word)+2)+"chars", "end-2c")
                 findSuggestions(word)
+                
                 #txt_edit.tag_config('highlight', foreground='red')
             word = ""
         #This else statement is where the suggestion code will go. So far it contains the current word being typed (global called word)
         else:
             word = word + event.char
+            guessWord(word)
+
 ###############################################################
     window = tk.Tk()
     window.title("Text Editor")
@@ -90,7 +110,21 @@ def main():
     window.mainloop()
 
 
+# This function grabs all text in editor upon clicking the get text button and outputs to command line
+def retrieve_input(txt_edit):
+    inputValue=txt_edit.get("1.0","end-1c")
+    #Following replace lines remove punctuations from the words. Useful for when we do operations on words.
+    inputValue = inputValue.replace("!","")
+    inputValue = inputValue.replace("?","")
+    inputValue = inputValue.replace(".","")
+    inputValue = inputValue.replace(",","")
+    my_split = inputValue.split()
+    print(my_split)
+    print(inputValue)
+
+
 def openFile():
+    global file_opened, correct_word
     # filename = fd.askopenfilename(
     #     title='Open a file',
     #     initialdir=os.getcwd(),
@@ -102,7 +136,8 @@ def openFile():
     # connect this to the getSuggestions(word) function and eventually combine it with a probability function
 
     # works as is on mac, might need to use the conditional in importData() if it doesn't work on windows
-    filename = 'data/raw/incorrect_words/wikipedia.dat'
+    filename = 'data/raw/incorrect_words/aspell.dat'
+    file_opened = True
     correct_word = ""
     buffer = ""
     with open(filename) as fp:
@@ -129,18 +164,14 @@ def openFile():
             else:
                 buffer += char
 
+    print("FINISHED")
+    print(correct, "out of", total)
+    print("correct word appeared in top 5 " + str((correct/count)*100) + "% of the time")
+    print("correct word was first suggestion " + str((fully_correct/count)*100) + "% of the time")
 
-# This function grabs all text in editor upon clicking the get text button and outputs to command line
-def retrieve_input(txt_edit):
-    inputValue=txt_edit.get("1.0","end-1c")
-    #Following replace lines remove punctuations from the words. Useful for when we do operations on words.
-    inputValue = inputValue.replace("!","")
-    inputValue = inputValue.replace("?","")
-    inputValue = inputValue.replace(".","")
-    inputValue = inputValue.replace(",","")
-    my_split = inputValue.split()
-    print(my_split)
-    print(inputValue)
+    end = time.time()
+    print("Took " +  str(int((end - begin_full)/60)) + " min and " + str(int((end-begin_full)%60)) + " sec.")
+    print(correct, fully_correct, total, count, progress, file_opened)
 
 
 #This is an event listener. Listens for each character typed in our entry window.
@@ -160,11 +191,30 @@ def update_suggestions(event):
     #This else statement is where the suggestion code will go. So far it contains the current word being typed (global called word)
     else:
         word = word + event.char
+        guessWord(word)
+
+
+# TODO: implement word suggestion everytime a key is pressed
+# TODO: Test this
+def guessWord(word):
+    guesses = []
+
+    print(word)
+    if word in word_freq_str:
+        # for key, value in incorrect_words.items():
+        #     if any(word in sub_str for sub_str in value):
+        #         guesses.append(key)
+        guesses = [guess for guess in word_freq.keys() if word in guess]
+
+    guesses.sort(key=getWordFreq, reverse=True)
+    guesses_pruned = guesses[:5]
+    guesses_pruned.sort(key=len)
+    print("top guesses:", guesses_pruned)
 
 
 def findSuggestions(word):
-    global begin
-    begin = time.time()
+    global begin_part
+    begin_part = time.time()
 
     word_splits = generateSplits(word)
     one_char_errors = genCommonErrors(word_splits)
@@ -179,12 +229,52 @@ def findSuggestions(word):
 
     two_char_errors = [k for k in two_char_errors if isKnown(k) and k != word]
 
-    print("potential replacements for " + word)
-    print(two_char_errors, len(two_char_errors))
+    # print("potential replacements for " + word)
+    # print(two_char_errors, len(two_char_errors))
+    print("word look-up took " + str(time.time() - begin_part) + " seconds")
 
-    print("word look-up took " + str(time.time() - begin) + " seconds")
-    # TODO: should cross reference if a potential word shows up in the incorrect words list
+    # TODO: sort the list by the frequency in word_freq to find most common?
+    # TODO: should cross reference if a potential word shows up in the common misspellings words list
     #       along with the above, give different weights to different common mistakes
+    #           - if it's in common misspellings, that could circumvent the whole process maybe?
+    #             since it's almost definitely that word
+
+    # sorts by frequency 
+    two_char_errors.sort(key=getWordFreq, reverse=True)
+
+    # move element to the front if it's a common misspelling
+    # TODO: check to see if this slows down functionality significantly
+    # if word in all_incorrect_spellings:
+    #     for key, value in incorrect_words.items():
+    #         if word in value:
+    #             two_char_errors.insert(0, key)
+
+    if len(two_char_errors) >= 5:
+        print("Suggestions for " + word + ":\n", two_char_errors[:5])
+    else:
+        print("Suggestions for " + word + ":\n", two_char_errors)
+
+    updatePercent(word, two_char_errors)
+    # print(progress, total)
+    print(str(int((progress/total)*100)) + "% done.")
+
+
+def updatePercent(word, wordList):
+    global total, correct, progress, fully_correct, count
+    if file_opened and len(wordList) > 0:
+        if correct_word in wordList:
+            correct += 1
+        if correct_word == wordList[0]:
+            fully_correct += 1
+
+        progress += 1
+        count += 1
+
+
+def getWordFreq(word):
+    if isKnown(word): return word_freq[word]
+    return 0
+
 
 def genCommonErrors(word_splits):
     pos_deletes = deletionList(word_splits)
@@ -257,7 +347,7 @@ def importData():
 
 
 def importAll(path):
-    global incorrect_words, bi_freq, word_freq
+    global incorrect_words, bi_freq, word_freq, all_incorrect_spellings, all_incorrect_str, word_freq_str
     key = ""
     value = ""
     values = []
@@ -276,17 +366,22 @@ def importAll(path):
                     value = value[:len(value)-1]
                 value = value[1:len(value)-1]
                 values.append(value)
+                all_incorrect_spellings.append(value)
 
             incorrect_words[key] = values
 
-        with open(path + 'bigram_freq.csv', 'r') as fp:
-            for line in csv.reader(fp):
-                bi_freq[line[0]] = int(line[1])
+    all_incorrect_str = '\t'.join(all_incorrect_spellings)
 
-        with open(path + 'word_freq.csv', 'r') as fp:
-            for line in csv.reader(fp):
-                # print(line[0], line[1])
-                word_freq[line[0]] = int(line[1])
+    with open(path + 'bigram_freq.csv', 'r') as fp:
+        for line in csv.reader(fp):
+            bi_freq[line[0]] = int(line[1])
+
+    with open(path + 'word_freq.csv', 'r') as fp:
+        for line in csv.reader(fp):
+            # print(line[0], line[1])
+            word_freq[line[0]] = int(line[1])
+            
+    word_freq_str = '\t'.join(word_freq.keys())
 
 
 if __name__ == "__main__":

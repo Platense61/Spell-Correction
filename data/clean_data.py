@@ -49,13 +49,33 @@ def big():
 
     # combine the word lists
     for key, value, in words_alpha_data.items():
-        print(key, value)
+        # print(key, value)
         if key in words:
             words[key] += words_alpha_data[key]
         else:
             words[key] = value
 
-    print(words['a'])
+    name_data = {}
+    with open("raw/names.txt", 'r') as fp:
+        while True:
+            line = fp.readline().lower()
+            line = line[:len(line)-1]
+
+            if not line:
+                print("end of file. Converting to CSV...")
+                break
+
+            name_data[line] = 1
+    
+    # combine the word lists
+    for key, value, in name_data.items():
+        # print(key, value)
+        if key in words:
+            words[key] += name_data[key]
+        else:
+            words[key] = value
+
+    # print(words['a'])
     # sorts dictionary by key
     words = dict(sorted(words.items(), reverse=True, key=lambda item: item[1]))
     toCSV('clean/word_freq.csv', ["word", "freq"], words)
@@ -141,7 +161,8 @@ def incorrect_words():
     missp_data = aspellFormat("raw/incorrect_words/missp.dat")
 
     # combine them into one dictionary
-    master = combineDict(aspell_data, holbrook_missp_data)
+    # master = combineDict(aspell_data, holbrook_missp_data)
+    master = combineDict(holbrook_missp_data, wikipedia_data)
     # master = combineDict(master, wikipedia_data)
     master = combineDict(master, missp_data)
     master = combineDict(master, holbrook_tagged_data)
