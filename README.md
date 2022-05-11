@@ -1,7 +1,13 @@
-# Spell-Correction
+# How to Use
 
-This is link for the tkinter editor. https://www.studytonight.com/tkinter/text-editor-application-using-tkinter
+1. To run this application clone the repo ```git clone https://github.com/Platense61/Spell-Correction.git```  
 
-My idea is to have users type or upload a file into the text editor, then your algorithm can run spell correction and detection on the words. We can also do it live while the user types which is nice.
+2. Once cloned, open the folder and run the script using ```python project3.py```  
 
-Only thing im confused on is how to implement the spell correction cause in the project description its very vague and does not mention that we cant use libraries
+3. From here you will see a tkinter UI pop up, you can now enter text into the text box, incorrect spellings will be underlined with a black underline and a word correction function will be ran with the output on the command line
+
+4. When the application is running there is an open button located on the right hand side. When clicked it will open a file explorer where you can navigate to various files. For testing purposes it is recommended to open aspell.dat, which is located in ```data/raw/incorrect_words/aspell.dat```. This will then trigger our spell correction to run on a bunch of misspelled words for testing purposes.  
+
+## Notes
+
+aspell.dat was used in the training data set
