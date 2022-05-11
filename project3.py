@@ -244,10 +244,10 @@ def findSuggestions(word):
 
     # move element to the front if it's a common misspelling
     # TODO: check to see if this slows down functionality significantly
-    # if word in all_incorrect_spellings:
-    #     for key, value in incorrect_words.items():
-    #         if word in value:
-    #             two_char_errors.insert(0, key)
+    if word in all_incorrect_spellings:
+        for key, value in incorrect_words.items():
+            if word in value:
+                two_char_errors.insert(0, key)
 
     if len(two_char_errors) >= 5:
         print("Suggestions for " + word + ":\n", two_char_errors[:5])
